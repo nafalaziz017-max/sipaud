@@ -1,0 +1,139 @@
+<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Absensi | SiPaud</title><meta name="robots" content="noindex"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="absen.css"><link rel="icon" href="favicon.png"></head><body>
+<nav class="navbar"><div class="container nav-inner"><a class="brand" href="index.html"><img class="brand-logo" src="logo.png" alt="Logo SiPaud" width="40" height="40">SiPaud</a><button class="menu-btn" aria-label="Buka menu">☰</button><div class="nav-links"><a href="index.html">Home</a><a href="fitur.html">Fitur</a><a href="service.html">Service</a><a href="blog.html">Blog</a><a href="contact.html">Contact</a><a class="nav-login active" href="absen.html">Masuk Absensi</a></div></div></nav>
+
+<main class="app container">
+  <div id="setupWarn" class="notice warn hide"><div><strong>Firebase belum diisi.</strong><small>Buka file <code>firebase-config.js</code> lalu isi 4 nilainya. Langkah lengkap ada di <code>PETUNJUK-SETUP.md</code>.</small></div></div>
+
+  <!-- LOGIN -->
+  <section id="vLogin" class="app-card narrow">
+    <h1 class="app-title">Masuk Absensi</h1>
+    <p class="muted">Gunakan email dan kata sandi dari admin sekolah.</p>
+    <form id="fLogin">
+      <label class="field-l" for="lEmail">Email</label>
+      <input id="lEmail" type="email" autocomplete="username" required>
+      <label class="field-l" for="lPass">Kata sandi</label>
+      <input id="lPass" type="password" autocomplete="current-password" required>
+      <p id="lErr" class="err" role="alert"></p>
+      <button class="btn btn-primary full" id="btnLogin" type="submit">Masuk</button>
+    </form>
+  </section>
+
+  <!-- TIDAK TERDAFTAR -->
+  <section id="vNoReg" class="app-card narrow hide">
+    <h1 class="app-title">Akun belum terdaftar</h1>
+    <p class="muted" id="noRegMsg">Akun ini belum didaftarkan sebagai guru oleh admin. Hubungi admin sekolah.</p>
+    <button class="btn btn-outline full" data-keluar>Keluar</button>
+  </section>
+
+  <!-- APLIKASI -->
+  <section id="vApp" class="hide">
+    <div class="app-head no-print">
+      <div><h1 class="app-title" id="hNama"></h1><p class="muted" id="hInfo"></p></div>
+      <button class="btn btn-outline" data-keluar>Keluar</button>
+    </div>
+    <div class="tabs no-print" id="tabs" role="tablist"></div>
+
+    <!-- ABSEN GURU -->
+    <div id="pGuru" class="pane hide">
+      <div class="app-card">
+        <h2>Absen guru</h2>
+        <p class="muted" id="gTgl"></p>
+        <div id="gStatus" class="mini-grid"></div>
+
+        <span class="field-l">Foto selfie</span>
+        <label for="gFoto" class="photo-box" id="photoBox"><span>Ketuk untuk<br>ambil foto</span></label>
+        <input type="file" id="gFoto" accept="image/*" capture="user" class="hide">
+
+        <span class="field-l">Lokasi</span>
+        <div id="locBox" class="notice idle"></div>
+        <button class="btn btn-outline full" id="btnLoc" type="button" style="margin-top:10px">Cek lokasi saya</button>
+
+        <div class="btn-row">
+          <button class="btn btn-primary" id="btnMasuk" type="button" disabled>Absen masuk</button>
+          <button class="btn btn-outline" id="btnPulang" type="button" disabled>Absen pulang</button>
+        </div>
+        <p class="muted small" id="gHint"></p>
+      </div>
+    </div>
+
+    <!-- ABSEN MURID -->
+    <div id="pMurid" class="pane hide">
+      <div class="app-card">
+        <h2>Absen murid</h2>
+        <div class="two">
+          <div><label class="field-l" for="mKelas">Kelas</label><select id="mKelas"></select></div>
+          <div><label class="field-l" for="mTgl">Tanggal</label><input type="date" id="mTgl"></div>
+        </div>
+        <input id="mCari" placeholder="Cari nama murid" style="margin-top:12px" aria-label="Cari nama murid">
+        <div class="btn-row"><button class="btn btn-outline" id="mSemua" type="button">Tandai semua hadir</button></div>
+        <div id="mList"></div>
+        <p class="muted small" id="mInfo"></p>
+        <button class="btn btn-primary full" id="mSimpan" type="button">Simpan absen murid</button>
+        <p class="muted small">H = Hadir, I = Izin, S = Sakit, A = Alpa.</p>
+      </div>
+    </div>
+
+    <!-- REKAP -->
+    <div id="pRekap" class="pane hide">
+      <div class="app-card">
+        <h2>Rekap harian</h2>
+        <label class="field-l" for="rTgl">Tanggal</label><input type="date" id="rTgl">
+        <h3 class="sub">Guru</h3><div id="rGuru"></div>
+        <h3 class="sub">Murid per kelas</h3><div id="rMurid"></div>
+      </div>
+      <div class="app-card">
+        <h2>Rekap bulanan</h2>
+        <label class="field-l" for="rBln">Bulan</label><input type="month" id="rBln">
+        <div class="btn-row no-print"><button class="btn btn-primary" id="btnBln" type="button">Tampilkan</button><button class="btn btn-outline" id="btnCsv" type="button" disabled>Unduh CSV</button><button class="btn btn-outline" id="btnCetak" type="button" disabled>Cetak / simpan PDF</button></div>
+        <div id="rBulan"></div>
+      </div>
+    </div>
+
+    <!-- ATUR -->
+    <div id="pAtur" class="pane hide">
+      <div class="app-card">
+        <h2>Lokasi sekolah</h2>
+        <label class="field-l" for="sNama">Nama sekolah</label><input id="sNama">
+        <div class="two">
+          <div><label class="field-l" for="sLat">Latitude</label><input id="sLat" inputmode="decimal" placeholder="-6.912345"></div>
+          <div><label class="field-l" for="sLng">Longitude</label><input id="sLng" inputmode="decimal" placeholder="107.123456"></div>
+        </div>
+        <label class="field-l" for="sRad">Radius absen guru (meter)</label><input id="sRad" type="number" min="5" max="500">
+        <div class="btn-row"><button class="btn btn-outline" id="btnHere" type="button">Pakai lokasi saya sekarang</button><button class="btn btn-primary" id="btnSimpanS" type="button">Simpan</button></div>
+        <p class="muted small">Tekan "Pakai lokasi saya sekarang" saat Anda berdiri di tengah sekolah dengan GPS menyala.</p>
+      </div>
+
+      <div class="app-card">
+        <h2>Data guru</h2>
+        <p class="muted small">Buat dulu akun email dan kata sandi guru di Firebase (Authentication → Add user), lalu daftarkan emailnya di sini. Kelas bisa lebih dari satu, pisahkan dengan koma.</p>
+        <div id="tList"></div>
+        <label class="field-l" for="tEmail">Email guru</label><input id="tEmail" type="email">
+        <div class="two">
+          <div><label class="field-l" for="tNama">Nama guru</label><input id="tNama"></div>
+          <div><label class="field-l" for="tKelas">Kelas yang diampu</label><input id="tKelas" placeholder="Contoh: TK A"></div>
+        </div>
+        <button class="btn btn-primary full" id="tSimpan" type="button" style="margin-top:12px">Simpan guru</button>
+      </div>
+
+      <div class="app-card">
+        <h2>Data murid</h2>
+        <div id="sList"></div>
+        <div class="two">
+          <div><label class="field-l" for="mNama">Nama murid</label><input id="mNama"></div>
+          <div><label class="field-l" for="mKls">Kelas</label><input id="mKls" placeholder="Contoh: TK A"></div>
+        </div>
+        <button class="btn btn-primary full" id="mTambah" type="button" style="margin-top:12px">Tambah murid</button>
+        <label class="field-l" for="mImpor">Atau impor banyak sekaligus</label>
+        <textarea id="mImpor" rows="5" placeholder="Satu murid per baris: Nama, Kelas&#10;Contoh:&#10;Aisyah Putri, TK A&#10;Budi Santoso, TK B"></textarea>
+        <button class="btn btn-outline full" id="mImporBtn" type="button" style="margin-top:10px">Impor murid</button>
+        <p class="muted small">Dari Excel/Google Sheets, salin dua kolom (nama dan kelas) lalu tempel di kotak ini.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="lightbox" class="lightbox hide" role="dialog" aria-label="Foto"><img alt="Foto absen"></div>
+<div id="toastBox"></div>
+<script src="script.js"></script>
+<script type="module" src="absen.js"></script>
+</body></html>

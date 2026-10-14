@@ -1,0 +1,75 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- pembantu ----------
+    function email() { return request.auth.token.email; }
+    function masuk() { return request.auth != null && request.auth.token.email != null; }
+    function profilPath() { return /databases/$(database)/documents/guru/$(request.auth.token.email); }
+    function terdaftar() { return masuk() && exists(profilPath()); }
+    function profil() { return get(profilPath()).data; }
+    function admin() { return terdaftar() && profil().role == 'admin'; }
+    function guru() { return terdaftar() && profil().role == 'guru'; }
+
+    // jarak (meter) titik absen ke titik sekolah, dihitung di server Firebase
+    function dekat(x) {
+      let s = get(/databases/$(database)/documents/sekolah/utama).data;
+      return math.sqrt(
+        math.pow((x.lat - s.lat) * 111320, 2) +
+        math.pow((x.lng - s.lng) * 111320 * s.cosLat, 2)
+      ) <= s.radius + 3;
+    }
+
+    // ---------- data sekolah ----------
+    match /sekolah/{id} {
+      allow read: if terdaftar();
+      allow write: if admin();
+    }
+
+    // dokumen guru memakai email (huruf kecil) sebagai ID
+    match /guru/{emailGuru} {
+      allow read: if terdaftar() && (admin() || emailGuru == email());
+      allow write: if admin();
+    }
+
+    match /murid/{id} {
+      allow read: if terdaftar();
+      allow write: if admin();
+    }
+
+    // ---------- absen murid: satu dokumen per kelas per hari ----------
+    match /absenMurid/{id} {
+      allow read: if terdaftar();
+      allow create, update: if admin() || (
+        guru()
+        && request.resource.data.kelas in profil().kelas
+        && request.resource.data.oleh == email()
+        && id == request.resource.data.tanggal + '_' + request.resource.data.kelas
+      );
+      allow delete: if admin();
+    }
+
+    // ---------- absen guru ----------
+    match /absenGuru/{id} {
+      allow read: if admin() || (terdaftar() && resource.data.email == email());
+      allow create: if guru()
+        && request.resource.data.guruId == request.auth.uid
+        && request.resource.data.email == email()
+        && request.resource.data.tipe in ['masuk', 'pulang']
+        && request.resource.data.waktu == request.time
+        && id == request.resource.data.tanggal + '_' + request.resource.data.email + '_' + request.resource.data.tipe
+        && dekat(request.resource.data);
+      allow update, delete: if admin();
+    }
+
+    // ---------- foto selfie absen guru (terpisah agar rekap tidak berat) ----------
+    match /foto/{id} {
+      allow read: if admin() || (terdaftar() && resource.data.email == email());
+      allow create: if guru()
+        && request.resource.data.email == email()
+        && request.resource.data.data is string
+        && request.resource.data.data.size() < 200000;
+      allow update, delete: if admin();
+    }
+  }
+}

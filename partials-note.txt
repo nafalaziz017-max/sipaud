@@ -1,0 +1,1 @@
+Semua angka statistik, nama murid/guru contoh, persentase, testimoni, rating, dan klaim jumlah pengguna dari versi lama sengaja dihapus agar website tidak menampilkan data palsu.
