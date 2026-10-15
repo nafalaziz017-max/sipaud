@@ -1,0 +1,13 @@
+{
+  "name": "absen-paud",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Absensi PAUD: guru (foto + GPS) dan murid (H/I/S/A)",
+  "dependencies": {
+    "@capacitor/android": "^7.0.0",
+    "@capacitor/core": "^7.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.0.0"
+  }
+}

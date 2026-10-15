@@ -12,7 +12,8 @@ const jam = ts => ts && ts.toDate ? ts.toDate().toLocaleTimeString('id-ID', { ho
 const urut = (a, b) => String(a).localeCompare(String(b), 'id');
 const normKelas = s => String(s || '').trim().toUpperCase();
 function toast(t) {
-  const e = document.createElement('div'); e.className = 'toast'; e.textContent = t;
+  $('#toastBox').innerHTML = '';
+  const e = document.createElement('div'); e.className = 'toast'; e.setAttribute('role', 'status'); e.textContent = t;
   $('#toastBox').appendChild(e); setTimeout(() => e.remove(), 2800);
 }
 function haversine(a, b, c, d) {
@@ -88,6 +89,12 @@ if (auth) onAuthStateChanged(auth, async user => {
 });
 
 /* ---------- kerangka + tab ---------- */
+const IKON = {
+  guru: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>',
+  murid: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.4"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5M16 14.5c3 0 5 1.8 5 4.5"/></svg>',
+  rekap: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>',
+  atur: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-6.1 7-11a7 7 0 1 0-14 0c0 4.9 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>'
+};
 const TAB_GURU = [['guru', 'Absen Guru'], ['murid', 'Absen Murid']];
 const TAB_ADMIN = [['rekap', 'Rekap'], ['atur', 'Atur']];
 let tabAktif = '';
@@ -96,7 +103,7 @@ function bangunApp() {
   $('#hNama').textContent = me.nama || me.email;
   $('#hInfo').textContent = (sekolah && sekolah.nama ? sekolah.nama + ' · ' : '') + (me.role === 'admin' ? 'Admin' : 'Guru' + (me.kelas.length ? ' · Kelas ' + me.kelas.join(', ') : ''));
   const tabs = me.role === 'admin' ? TAB_ADMIN : TAB_GURU;
-  $('#tabs').innerHTML = tabs.map(([k, n]) => `<button role="tab" data-t="${k}" aria-selected="false">${n}</button>`).join('');
+  $('#tabs').innerHTML = tabs.map(([k, n]) => `<button role="tab" data-t="${k}" aria-selected="false">${IKON[k]}<span>${n}</span></button>`).join('');
   const minta = new URLSearchParams(location.search).get('tab');
   bukaTab(tabs.some(t => t[0] === minta) ? minta : tabs[0][0]);
 }
@@ -230,7 +237,7 @@ async function muatKelas() {
 function gambarMurid() {
   const cari = $('#mCari').value.trim().toLowerCase();
   const list = muridKelas.filter(m => !cari || m.nama.toLowerCase().includes(cari));
-  $('#mList').innerHTML = list.length ? list.map(m => `<div class="row-item"><div class="grow"><b>${esc(m.nama)}</b></div>
+  $('#mList').innerHTML = list.length ? list.map(m => `<div class="row-item murid"><div class="grow"><b>${esc(m.nama)}</b></div>
     <div class="seg" data-id="${m.id}">${['H', 'I', 'S', 'A'].map(c => `<button type="button" data-s="${c}" class="${statusMap[m.id] === c ? 'on' : ''}" aria-label="${{ H: 'Hadir', I: 'Izin', S: 'Sakit', A: 'Alpa' }[c]}">${c}</button>`).join('')}</div></div>`).join('')
     : '<p class="muted" style="text-align:center;padding:16px">Tidak ada murid di kelas ini.</p>';
   const belum = muridKelas.filter(m => !statusMap[m.id]).length;
@@ -283,7 +290,7 @@ async function rekapHarian() {
   const logs = lg.docs.map(d => ({ id: d.id, ...d.data() }));
   $('#rGuru').innerHTML = gurus.length ? gurus.map(g => {
     const m = logs.find(l => l.email === g.email && l.tipe === 'masuk'), p = logs.find(l => l.email === g.email && l.tipe === 'pulang');
-    const th = l => l ? `<img class="thumb" data-foto="${esc(l.id)}" alt="Foto ${esc(g.nama)}">` : '<div class="thumb"></div>';
+    const th = l => l ? `<img class="thumb" data-foto="${esc(l.id)}" alt="Foto ${esc(g.nama)}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">` : '<div class="thumb"></div>';
     return `<div class="row-item">${th(m)}<div class="grow"><b>${esc(g.nama)}</b><span>${m ? 'Masuk ' + jam(m.waktu) + ' (' + m.jarak + ' m)' : 'Belum absen'}${p ? ' · Pulang ' + jam(p.waktu) : ''}</span></div><span class="pill ${m ? 'ok' : 'bad'}">${m ? 'Hadir' : 'Belum'}</span></div>`;
   }).join('') : '<p class="muted">Belum ada guru terdaftar.</p>';
   document.querySelectorAll('#rGuru img[data-foto]').forEach(img => {
@@ -349,7 +356,7 @@ $('#btnCetak').addEventListener('click', () => window.print());
 /* lightbox foto */
 document.addEventListener('click', e => {
   const img = e.target.closest('img.thumb');
-  if (img && img.src && img.dataset.foto) { $('#lightbox img').src = img.src; $('#lightbox').classList.remove('hide'); }
+  if (img && img.dataset.foto && img.src.startsWith('data:image/jpeg')) { $('#lightbox img').src = img.src; $('#lightbox').classList.remove('hide'); }
   else if (e.target.closest('#lightbox')) $('#lightbox').classList.add('hide');
 });
 

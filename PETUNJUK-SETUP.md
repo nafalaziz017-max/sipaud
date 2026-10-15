@@ -50,6 +50,18 @@ Penulisan kelas otomatis dijadikan huruf besar, jadi `tk a` dan `TK A` dianggap 
 - Jika banyak guru gagal padahal di sekolah, naikkan radius ke 30–50 m (GPS HP bisa meleset 5–15 m, lebih besar di dalam ruangan).
 - Cek halaman Rekap: foto, jam, dan jarak harus muncul.
 
+## 9. Pasang di HP guru (bentuk aplikasi)
+Halaman `absen.html` sudah berbentuk aplikasi HP: menu ada di bagian bawah layar, tombol besar, dan bisa dipasang di layar utama seperti aplikasi biasa.
+
+- **Android (Chrome):** buka alamat situs, lalu ketuk tombol **Pasang** di bagian atas halaman. Jika tidak muncul, buka menu titik tiga → **Pasang aplikasi** / **Tambahkan ke layar utama**.
+- **iPhone (Safari):** ketuk tombol **Bagikan** → **Tambah ke Layar Utama**. Di iPhone harus memakai Safari.
+
+Setelah terpasang, ikon "Absen PAUD" muncul di layar utama dan terbuka layar penuh tanpa bilah alamat. Aplikasi tetap butuh internet untuk absen. Saat sinyal hilang hanya tampilan dasarnya yang terbuka.
+
+Berkas yang mendukung ini: `manifest.json`, `sw.js`, `pwa.js`, serta ikon `icon-192.png`, `icon-512.png`, `apple-touch-icon.png`. Semuanya harus ikut diunggah di folder yang sama dengan `absen.html`. Ikon dibuat dari logo asli yang hanya 48 px, jadi hasilnya agak buram. Ganti ketiga ikon itu dengan logo beresolusi tinggi (512 × 512 px) bila ada, dengan nama berkas yang sama.
+
+Setelah mengunggah pembaruan, aplikasi di HP guru otomatis memakai versi baru pada pembukaan berikutnya. Jika masih tampil versi lama, tutup aplikasi lalu buka lagi.
+
 ## Hal yang perlu diketahui
 - Aplikasi fake GPS masih bisa memalsukan lokasi. Foto selfie dengan cap waktu dan jarak yang tercatat membantu admin memeriksa.
 - Tanggal absen diambil dari tanggal HP, sedangkan jam diambil dari server. Jika tanggal HP sengaja diubah, jam di rekap akan tidak cocok.
